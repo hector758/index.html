@@ -4,410 +4,378 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bypass MortyHub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --green: #00ff99;
-            --green-dim: #00cc7a;
-            --green-glow: rgba(0, 255, 153, 0.35);
-            --red: #ff3c3c;
-            --bg: #080b0a;
-            --panel: #0d1210;
-            --border: #1a2e22;
-            --text: #b0ffd6;
+            --c: #00ffa3;
+            --c2: #00d4ff;
+            --bg: #060a09;
+            --panel: #0b1210;
+            --glow: rgba(0,255,163,0.25);
             --mono: 'Share Tech Mono', monospace;
-            --display: 'Orbitron', sans-serif;
+            --head: 'Orbitron', sans-serif;
         }
 
-        body {
-            font-family: var(--mono);
+        html, body {
+            width: 100%; min-height: 100vh;
             background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--mono);
+            color: var(--c);
+            overflow-x: hidden;
         }
 
-        /* Animated grid background */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
+        .bg {
+            position: fixed; inset: 0; z-index: 0;
             background-image:
-                linear-gradient(rgba(0,255,153,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,255,153,0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: 0;
-            animation: gridShift 20s linear infinite;
+                linear-gradient(rgba(0,255,163,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,163,0.03) 1px, transparent 1px);
+            background-size: 36px 36px;
+            animation: bgMove 25s linear infinite;
         }
+        .bg-glow {
+            position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 55%, rgba(0,255,163,0.06) 0%, transparent 65%);
+        }
+        @keyframes bgMove { to { background-position: 36px 36px, 36px 36px; } }
 
-        body::after {
+        .scan {
+            position: fixed; inset: 0; z-index: 999; pointer-events: none;
+            background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px);
+        }
+        .scan::after {
             content: '';
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0,255,153,0.05) 0%, transparent 70%);
-            z-index: 0;
-            pointer-events: none;
+            position: absolute; left: 0; right: 0; height: 120px;
+            background: linear-gradient(transparent, rgba(0,255,163,0.04), transparent);
+            animation: sweep 5s linear infinite;
+        }
+        @keyframes sweep { 0% { top: -120px; } 100% { top: 100vh; } }
+
+        .wrap {
+            position: relative; z-index: 1;
+            width: 92%; max-width: 430px;
+            padding: 20px 0;
         }
 
-        @keyframes gridShift {
-            0% { background-position: 0 0, 0 0; }
-            100% { background-position: 40px 40px, 40px 40px; }
-        }
-
-        .container {
+        .border-frame {
             position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 460px;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--c), var(--c2), var(--c));
+            background-size: 300% 300%;
+            animation: borderAnim 4s ease infinite;
+            clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+        }
+        @keyframes borderAnim {
+            0%,100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
 
-        /* Corner decorations */
-        .frame {
-            position: relative;
+        .card {
             background: var(--panel);
-            border: 1px solid var(--border);
-            padding: 36px 32px 32px;
-            clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
-            box-shadow:
-                0 0 40px rgba(0,255,153,0.08),
-                inset 0 0 40px rgba(0,0,0,0.6);
+            clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+            padding: 32px 28px 28px;
         }
 
-        .frame::before, .frame::after {
-            content: '';
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            border-color: var(--green);
-            border-style: solid;
-        }
-        .frame::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
-        .frame::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+        .corner { position: absolute; width: 16px; height: 16px; z-index: 10; }
+        .corner.tl { top: -1px; left: -1px; border-top: 2px solid #fff; border-left: 2px solid #fff; }
+        .corner.br { bottom: -1px; right: -1px; border-bottom: 2px solid #fff; border-right: 2px solid #fff; }
 
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
+        .header { text-align: center; margin-bottom: 26px; }
 
-        .badge {
-            display: inline-block;
-            font-size: 10px;
-            letter-spacing: 4px;
-            color: var(--green-dim);
-            border: 1px solid var(--border);
-            padding: 4px 12px;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-        }
-
-        h1 {
-            font-family: var(--display);
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--green);
-            text-shadow: 0 0 20px var(--green-glow), 0 0 40px rgba(0,255,153,0.15);
-            letter-spacing: 2px;
-            line-height: 1.1;
-        }
-
-        h1 span {
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            color: rgba(0,255,153,0.5);
-            letter-spacing: 6px;
-            margin-top: 4px;
-        }
-
-        /* Divider */
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 24px;
-            opacity: 0.4;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--green);
-        }
-        .divider-icon { font-size: 11px; color: var(--green); white-space: nowrap; letter-spacing: 2px; }
-
-        /* Input */
-        .input-wrap {
-            position: relative;
+        .chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 9px; letter-spacing: 4px;
+            color: rgba(0,255,163,0.45);
+            border: 1px solid rgba(0,255,163,0.15);
+            padding: 4px 14px 4px 10px;
             margin-bottom: 14px;
         }
+        .chip::before {
+            content: ''; width: 5px; height: 5px;
+            background: var(--c); border-radius: 50%;
+            animation: blink 1.4s ease infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-        .input-label {
-            display: block;
-            font-size: 10px;
-            letter-spacing: 3px;
-            color: rgba(0,255,153,0.5);
+        h1 {
+            font-family: var(--head);
+            font-size: 28px; font-weight: 900;
+            letter-spacing: 1px; line-height: 1;
+            background: linear-gradient(90deg, var(--c), var(--c2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 18px var(--glow));
+        }
+        .subtitle {
+            font-size: 10px; letter-spacing: 5px;
+            color: rgba(0,255,163,0.35);
+            margin-top: 6px;
+        }
+
+        .sep {
+            display: flex; align-items: center; gap: 8px;
+            margin: 0 0 22px;
+        }
+        .sep-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,255,163,0.2), transparent); }
+        .sep-txt { font-size: 9px; letter-spacing: 3px; color: rgba(0,255,163,0.3); }
+
+        .lbl {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 9px; letter-spacing: 3px;
+            color: rgba(0,255,163,0.4);
             margin-bottom: 8px;
         }
+        .lbl::before { content: '▸'; color: var(--c2); }
 
         input[type="text"] {
-            width: 100%;
+            width: 100%; margin-bottom: 14px;
             padding: 13px 16px;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--border);
-            color: #fff;
-            font-family: var(--mono);
-            font-size: 13px;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(0,255,163,0.15);
+            color: #e0fff6;
+            font-family: var(--mono); font-size: 12px;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color .25s, box-shadow .25s;
+            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
         }
-
-        input[type="text"]::placeholder { color: rgba(255,255,255,0.2); }
-
+        input[type="text"]::placeholder { color: rgba(255,255,255,0.18); }
         input[type="text"]:focus {
-            border-color: var(--green);
-            box-shadow: 0 0 0 1px var(--green), 0 0 20px rgba(0,255,153,0.1);
+            border-color: var(--c);
+            box-shadow: 0 0 0 1px var(--c), 0 0 20px rgba(0,255,163,0.12);
         }
 
-        /* Button */
-        button {
-            width: 100%;
-            padding: 14px;
+        button#bypassBtn {
+            width: 100%; padding: 15px;
             background: transparent;
-            border: 1px solid var(--green);
-            color: var(--green);
-            font-family: var(--display);
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            cursor: pointer;
-            text-transform: uppercase;
-            position: relative;
-            overflow: hidden;
-            transition: color 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--c);
+            color: var(--c);
+            font-family: var(--head); font-size: 12px; font-weight: 700;
+            letter-spacing: 4px; text-transform: uppercase;
+            cursor: pointer; position: relative; overflow: hidden;
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+            transition: color .25s, box-shadow .25s;
+        }
+        button#bypassBtn .fill {
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, var(--c), var(--c2));
+            transform: scaleX(0); transform-origin: left;
+            transition: transform .3s ease; z-index: 0;
+        }
+        button#bypassBtn:hover .fill { transform: scaleX(1); }
+        button#bypassBtn:hover { color: #000; box-shadow: 0 0 30px var(--glow); }
+        button#bypassBtn .btxt { position: relative; z-index: 1; }
+        button#bypassBtn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+        .progress-track {
+            width: 100%; height: 2px;
+            background: rgba(0,255,163,0.08);
+            margin-top: 10px; overflow: hidden; display: none;
+        }
+        .progress-track.active { display: block; }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--c), var(--c2), var(--c));
+            background-size: 200%;
+            animation: barSlide 1.4s linear infinite;
+        }
+        @keyframes barSlide {
+            0% { width: 30%; margin-left: -30%; }
+            100% { width: 30%; margin-left: 100%; }
         }
 
-        button::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: var(--green);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.25s ease;
-            z-index: 0;
+        #result { margin-top: 18px; }
+
+        .status {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 14px; border-left: 2px solid;
+            font-size: 11px; line-height: 1.6;
         }
+        .status.loading { border-color: rgba(0,255,163,0.4); color: rgba(0,255,163,0.65); background: rgba(0,255,163,0.03); }
+        .status.error   { border-color: #ff4a4a; color: #ff7070; background: rgba(255,74,74,0.05); }
+        .status.success { border-color: var(--c); color: var(--c); background: rgba(0,255,163,0.04); }
 
-        button:hover::before { transform: scaleX(1); }
-        button:hover { color: #000; box-shadow: 0 0 25px var(--green-glow); }
-        button span { position: relative; z-index: 1; }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
+        .dot-ind {
+            width: 7px; height: 7px; border-radius: 50%;
+            flex-shrink: 0; margin-top: 4px;
         }
+        .loading .dot-ind { background: var(--c); animation: blink 1s infinite; }
+        .error   .dot-ind { background: #ff4a4a; }
+        .success .dot-ind { background: var(--c); }
 
-        /* Result area */
-        #result {
-            margin-top: 20px;
-            min-height: 52px;
-            font-size: 12px;
-            line-height: 1.6;
-        }
-
-        .status-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 14px;
+        .url-pill {
+            margin-top: 10px; padding: 9px 13px;
             background: rgba(0,0,0,0.4);
-            border-left: 2px solid;
+            border: 1px solid rgba(0,255,163,0.1);
+            font-size: 10px; color: rgba(0,255,163,0.4);
+            word-break: break-all; line-height: 1.5;
         }
 
-        .status-bar.loading { border-color: rgba(0,255,153,0.4); color: rgba(0,255,153,0.7); }
-        .status-bar.error   { border-color: var(--red); color: var(--red); }
-        .status-bar.success { border-color: var(--green); }
-
-        .dot {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            animation: pulse 1.2s ease-in-out infinite;
-        }
-        .loading .dot { background: var(--green); }
-        .error   .dot { background: var(--red); animation: none; }
-        .success .dot { background: var(--green); animation: none; }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.2; }
-        }
-
-        .go-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            width: 100%;
-            padding: 14px 18px;
-            background: var(--green);
+        .go-link {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-top: 10px; padding: 15px;
+            background: linear-gradient(90deg, var(--c), var(--c2));
             color: #000;
-            font-family: var(--display);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-decoration: none;
-            text-transform: uppercase;
-            justify-content: center;
-            transition: background 0.2s, box-shadow 0.2s;
+            font-family: var(--head); font-size: 11px; font-weight: 700;
+            letter-spacing: 3px; text-decoration: none; text-transform: uppercase;
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+            transition: filter .25s, box-shadow .25s;
+        }
+        .go-link:hover { filter: brightness(1.15); box-shadow: 0 0 30px var(--glow); }
+        .go-link::before { content: '▶'; font-size: 9px; }
+
+        .api-row {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .api-badge {
+            font-size: 8px; letter-spacing: 2px;
+            padding: 3px 8px;
+            border: 1px solid rgba(0,255,163,0.1);
+            color: rgba(0,255,163,0.25);
         }
 
-        .go-btn:hover {
-            background: #fff;
-            box-shadow: 0 0 30px var(--green-glow);
-        }
-
-        .url-preview {
-            margin-top: 8px;
-            padding: 8px 12px;
-            background: rgba(0,255,153,0.04);
-            border: 1px solid var(--border);
-            font-size: 10px;
-            color: rgba(0,255,153,0.4);
-            word-break: break-all;
-            letter-spacing: 0.5px;
-        }
-
-        /* Footer */
         .footer {
-            text-align: center;
-            margin-top: 18px;
-            font-size: 10px;
-            letter-spacing: 2px;
-            color: rgba(0,255,153,0.2);
-        }
-
-        /* Scanline effect */
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100vh); }
-        }
-        .scanline {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: linear-gradient(transparent, rgba(0,255,153,0.06), transparent);
-            animation: scanline 6s linear infinite;
-            pointer-events: none;
-            z-index: 999;
+            text-align: center; margin-top: 14px;
+            font-size: 9px; letter-spacing: 3px;
+            color: rgba(0,255,163,0.18);
         }
     </style>
 </head>
 <body>
-    <div class="scanline"></div>
+    <div class="bg"></div>
+    <div class="bg-glow"></div>
+    <div class="scan"></div>
 
-    <div class="container">
-        <div class="frame">
-            <div class="header">
-                <div class="badge">▸ TOOL v2.0 ◂</div>
-                <h1>
-                    BYPASS
-                    <span>MORTYHUB</span>
-                </h1>
-            </div>
+    <div class="wrap">
+        <div class="border-frame">
+            <div class="corner tl"></div>
+            <div class="corner br"></div>
+            <div class="card">
+                <div class="header">
+                    <div class="chip">SISTEMA ACTIVO</div>
+                    <h1>BYPASS</h1>
+                    <div class="subtitle">MORTYHUB LINK RESOLVER</div>
+                </div>
 
-            <div class="divider">
-                <span class="divider-icon">◈ LINK RESOLVER ◈</span>
-            </div>
+                <div class="sep">
+                    <div class="sep-line"></div>
+                    <div class="sep-txt">◈ INPUT ◈</div>
+                    <div class="sep-line"></div>
+                </div>
 
-            <label class="input-label">▸ TARGET URL</label>
-            <div class="input-wrap">
+                <div class="lbl">URL OBJETIVO</div>
                 <input type="text" id="linkInput" placeholder="https://linkvertise.com/...">
+
+                <button id="bypassBtn" onclick="runBypass()">
+                    <div class="fill"></div>
+                    <span class="btxt">⚡ SALTAR ENLACE</span>
+                </button>
+
+                <div class="progress-track" id="progressTrack">
+                    <div class="progress-bar"></div>
+                </div>
+
+                <div id="result"></div>
+
+                <div class="api-row">
+                    <div class="api-badge">bypass.bot.nu</div>
+                    <div class="api-badge">bypass.vip</div>
+                    <div class="api-badge">bypass.city</div>
+                    <div class="api-badge">cors proxy</div>
+                </div>
             </div>
-
-            <button onclick="getBypass()" id="bypassBtn">
-                <span>⚡ SALTAR ENLACE</span>
-            </button>
-
-            <div id="result"></div>
         </div>
-
-        <div class="footer">SYS:OK &nbsp;|&nbsp; MORTYHUB &nbsp;|&nbsp; 2025</div>
+        <div class="footer">MORTYHUB &nbsp;◈&nbsp; BYPASS ENGINE v3.0 &nbsp;◈&nbsp; 2025</div>
     </div>
 
     <script>
-        async function getBypass() {
-            const link = document.getElementById('linkInput').value.trim();
+        // APIs con soporte CORS real + fallback via allorigins proxy
+        const APIS = [
+            {
+                name: 'bypass.bot.nu',
+                fn: async (url) => {
+                    const r = await fetch(`https://bypass.bot.nu/bypass?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(8000) });
+                    const d = await r.json();
+                    return d.destination || d.result || d.bypassed || d.url;
+                }
+            },
+            {
+                name: 'bypass.vip',
+                fn: async (url) => {
+                    const r = await fetch(`https://api.bypass.vip/bypass?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(8000) });
+                    const d = await r.json();
+                    return d.destination || d.result || d.bypassed || d.url;
+                }
+            },
+            {
+                name: 'bypass.city (proxy)',
+                fn: async (url) => {
+                    const target = `https://bypass.city/api/bypass?url=${encodeURIComponent(url)}`;
+                    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`;
+                    const r = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
+                    const raw = await r.json();
+                    const d = JSON.parse(raw.contents);
+                    return d.destination || d.result || d.bypassed || d.url;
+                }
+            },
+            {
+                name: 'bypassunlock (proxy)',
+                fn: async (url) => {
+                    const target = `https://bypassunlock.com/api/bypass?url=${encodeURIComponent(url)}`;
+                    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`;
+                    const r = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
+                    const raw = await r.json();
+                    const d = JSON.parse(raw.contents);
+                    return d.destination || d.result || d.bypassed || d.url || d.data;
+                }
+            }
+        ];
+
+        async function runBypass() {
+            const input = document.getElementById('linkInput').value.trim();
             const resDiv = document.getElementById('result');
             const btn = document.getElementById('bypassBtn');
+            const track = document.getElementById('progressTrack');
 
-            if (!link) {
-                resDiv.innerHTML = `
-                    <div class="status-bar error">
-                        <div class="dot"></div>
-                        <span>ERROR: Pega un link primero.</span>
-                    </div>`;
+            if (!input) {
+                resDiv.innerHTML = mkStatus('error', '⚠ ERROR — Pega un link primero.');
                 return;
             }
 
             btn.disabled = true;
-            resDiv.innerHTML = `
-                <div class="status-bar loading">
-                    <div class="dot"></div>
-                    <span>Resolviendo enlace... por favor espera.</span>
-                </div>`;
-
-            const apis = [
-                `https://bypass.city/api/bypass?url=${encodeURIComponent(link)}`,
-                `https://api.bypass.vip/bypass?url=${encodeURIComponent(link)}`,
-            ];
+            track.classList.add('active');
 
             let finalUrl = null;
 
-            for (const apiUrl of apis) {
+            for (let i = 0; i < APIS.length; i++) {
+                resDiv.innerHTML = mkStatus('loading', `Probando ${APIS[i].name} [${i+1}/${APIS.length}]...`);
                 try {
-                    const res = await fetch(apiUrl, { signal: AbortSignal.timeout(8000) });
-                    if (!res.ok) continue;
-                    const data = await res.json();
-                    const url = data.destination || data.result || data.bypassed || data.url || data.data;
-                    if (url && url.startsWith('http')) {
-                        finalUrl = url;
-                        break;
-                    }
-                } catch (_) { /* try next */ }
+                    const res = await APIS[i].fn(input);
+                    if (res && res.startsWith('http')) { finalUrl = res; break; }
+                } catch (_) {}
             }
 
             btn.disabled = false;
+            track.classList.remove('active');
 
             if (finalUrl) {
                 resDiv.innerHTML = `
-                    <div class="status-bar success">
-                        <div class="dot"></div>
-                        <span>ENLACE RESUELTO EXITOSAMENTE</span>
-                    </div>
-                    <div class="url-preview">${finalUrl}</div>
-                    <a class="go-btn" href="${finalUrl}" target="_blank" rel="noopener">
-                        ▸ IR AL DESTINO ✓
-                    </a>`;
+                    ${mkStatus('success', 'DESTINO ENCONTRADO — Enlace resuelto con éxito.')}
+                    <div class="url-pill">${finalUrl}</div>
+                    <a class="go-link" href="${finalUrl}" target="_blank" rel="noopener noreferrer">IR AL DESTINO</a>`;
             } else {
-                resDiv.innerHTML = `
-                    <div class="status-bar error">
-                        <div class="dot"></div>
-                        <span>ERROR: Link no soportado o APIs caídas. Intenta más tarde.</span>
-                    </div>`;
+                resDiv.innerHTML = mkStatus('error', 'ERROR — Ninguna API pudo resolver este enlace. Verifica que sea un link soportado.');
             }
         }
 
+        function mkStatus(type, msg) {
+            return `<div class="status ${type}"><div class="dot-ind"></div><span>${msg}</span></div>`;
+        }
+
         document.getElementById('linkInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter') getBypass();
+            if (e.key === 'Enter') runBypass();
         });
     </script>
 </body>
