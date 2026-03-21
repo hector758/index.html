@@ -3,247 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bypass MortyHub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>MortyHub - Bypass Tool 😈</title>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --c: #00ffa3; --c2: #00d4ff; --bg: #060a09; --panel: #0b1210;
-            --glow: rgba(0,255,163,0.25); --mono: 'Share Tech Mono', monospace; --head: 'Orbitron', sans-serif;
+        :root { --neon: #00ff99; --bg: #050505; }
+        body { 
+            background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;
         }
-        html, body { width: 100%; min-height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; font-family: var(--mono); color: var(--c); overflow-x: hidden; }
-        .bg { position: fixed; inset: 0; z-index: 0; background-image: linear-gradient(rgba(0,255,163,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,163,0.03) 1px, transparent 1px); background-size: 36px 36px; animation: bgMove 25s linear infinite; }
-        .bg-glow { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse 80% 60% at 50% 55%, rgba(0,255,163,0.06) 0%, transparent 65%); }
-        @keyframes bgMove { to { background-position: 36px 36px, 36px 36px; } }
-        .scan { position: fixed; inset: 0; z-index: 999; pointer-events: none; background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px); }
-        .scan::after { content: ''; position: absolute; left: 0; right: 0; height: 120px; background: linear-gradient(transparent, rgba(0,255,163,0.04), transparent); animation: sweep 5s linear infinite; }
-        @keyframes sweep { 0% { top: -120px; } 100% { top: 100vh; } }
-        .wrap { position: relative; z-index: 1; width: 92%; max-width: 430px; padding: 20px 0; }
-        .border-frame { position: relative; padding: 2px; background: linear-gradient(135deg, var(--c), var(--c2), var(--c)); background-size: 300% 300%; animation: borderAnim 4s ease infinite; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
-        @keyframes borderAnim { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-        .card { background: var(--panel); clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); padding: 32px 28px 28px; }
-        .corner { position: absolute; width: 16px; height: 16px; z-index: 10; }
-        .corner.tl { top: -1px; left: -1px; border-top: 2px solid #fff; border-left: 2px solid #fff; }
-        .corner.br { bottom: -1px; right: -1px; border-bottom: 2px solid #fff; border-right: 2px solid #fff; }
-        .header { text-align: center; margin-bottom: 26px; }
-        .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 9px; letter-spacing: 4px; color: rgba(0,255,163,0.45); border: 1px solid rgba(0,255,163,0.15); padding: 4px 14px 4px 10px; margin-bottom: 14px; }
-        .chip::before { content: ''; width: 5px; height: 5px; background: var(--c); border-radius: 50%; animation: blink 1.4s ease infinite; }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-        h1 { font-family: var(--head); font-size: 28px; font-weight: 900; letter-spacing: 1px; line-height: 1; background: linear-gradient(90deg, var(--c), var(--c2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 18px var(--glow)); }
-        .subtitle { font-size: 10px; letter-spacing: 5px; color: rgba(0,255,163,0.35); margin-top: 6px; }
-        .sep { display: flex; align-items: center; gap: 8px; margin: 0 0 22px; }
-        .sep-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,255,163,0.2), transparent); }
-        .sep-txt { font-size: 9px; letter-spacing: 3px; color: rgba(0,255,163,0.3); }
-        .lbl { display: flex; align-items: center; gap: 6px; font-size: 9px; letter-spacing: 3px; color: rgba(0,255,163,0.4); margin-bottom: 8px; }
-        .lbl::before { content: '▸'; color: var(--c2); }
-        input[type="text"] { width: 100%; margin-bottom: 14px; padding: 13px 16px; background: rgba(0,0,0,0.55); border: 1px solid rgba(0,255,163,0.15); color: #e0fff6; font-family: var(--mono); font-size: 12px; outline: none; transition: border-color .25s, box-shadow .25s; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px)); }
-        input[type="text"]::placeholder { color: rgba(255,255,255,0.18); }
-        input[type="text"]:focus { border-color: var(--c); box-shadow: 0 0 0 1px var(--c), 0 0 20px rgba(0,255,163,0.12); }
-        button#bypassBtn { width: 100%; padding: 15px; background: transparent; border: 1px solid var(--c); color: var(--c); font-family: var(--head); font-size: 12px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; cursor: pointer; position: relative; overflow: hidden; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); transition: color .25s, box-shadow .25s; }
-        button#bypassBtn .fill { position: absolute; inset: 0; background: linear-gradient(90deg, var(--c), var(--c2)); transform: scaleX(0); transform-origin: left; transition: transform .3s ease; z-index: 0; }
-        button#bypassBtn:hover .fill { transform: scaleX(1); }
-        button#bypassBtn:hover { color: #000; box-shadow: 0 0 30px var(--glow); }
-        button#bypassBtn .btxt { position: relative; z-index: 1; }
-        button#bypassBtn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
-        .progress-track { width: 100%; height: 2px; background: rgba(0,255,163,0.08); margin-top: 10px; overflow: hidden; display: none; }
-        .progress-track.active { display: block; }
-        .progress-bar { height: 100%; width: 40%; background: linear-gradient(90deg, transparent, var(--c), var(--c2), transparent); animation: barSlide 1.2s linear infinite; }
-        @keyframes barSlide { 0%{margin-left:-40%} 100%{margin-left:110%} }
-        #result { margin-top: 18px; }
-        .status { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-left: 2px solid; font-size: 11px; line-height: 1.6; }
-        .status.loading { border-color: rgba(0,255,163,0.4); color: rgba(0,255,163,0.65); background: rgba(0,255,163,0.03); }
-        .status.error { border-color: #ff4a4a; color: #ff7070; background: rgba(255,74,74,0.05); }
-        .status.success { border-color: var(--c); color: var(--c); background: rgba(0,255,163,0.04); }
-        .dot-ind { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
-        .loading .dot-ind { background: var(--c); animation: blink 1s infinite; }
-        .error .dot-ind { background: #ff4a4a; }
-        .success .dot-ind { background: var(--c); }
-        .url-pill { margin-top: 10px; padding: 9px 13px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,255,163,0.1); font-size: 10px; color: rgba(0,255,163,0.4); word-break: break-all; line-height: 1.5; }
-        .go-link { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; padding: 15px; background: linear-gradient(90deg, var(--c), var(--c2)); color: #000; font-family: var(--head); font-size: 11px; font-weight: 700; letter-spacing: 3px; text-decoration: none; text-transform: uppercase; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); transition: filter .25s, box-shadow .25s; }
-        .go-link:hover { filter: brightness(1.15); box-shadow: 0 0 30px var(--glow); }
-        .go-link::before { content: '▶'; font-size: 9px; }
-        .info-box { margin-top: 10px; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(0,255,163,0.12); font-size: 9px; color: rgba(0,255,163,0.3); line-height: 1.8; }
-        .footer { text-align: center; margin-top: 14px; font-size: 9px; letter-spacing: 3px; color: rgba(0,255,163,0.18); }
+        .panel {
+            background: #111; border: 2px solid var(--neon); padding: 30px;
+            border-radius: 10px; box-shadow: 0 0 20px rgba(0,255,153,0.3);
+            width: 90%; max-width: 450px; text-align: center;
+        }
+        h1 { text-shadow: 0 0 10px var(--neon); font-size: 1.5rem; }
+        input {
+            width: 100%; padding: 12px; margin: 15px 0; background: #000;
+            border: 1px solid var(--neon); color: white; border-radius: 5px;
+            outline: none; box-sizing: border-box;
+        }
+        button {
+            width: 100%; padding: 12px; background: var(--neon); color: #000;
+            border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
+            text-transform: uppercase; transition: 0.3s;
+        }
+        button:hover { box-shadow: 0 0 20px var(--neon); transform: scale(1.02); }
+        #status { margin-top: 20px; font-size: 0.9rem; }
+        .result-box {
+            margin-top: 20px; padding: 10px; border: 1px dashed var(--neon);
+            display: none; word-break: break-all;
+        }
+        a { color: white; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="bg"></div><div class="bg-glow"></div><div class="scan"></div>
-    <div class="wrap">
-        <div class="border-frame">
-            <div class="corner tl"></div><div class="corner br"></div>
-            <div class="card">
-                <div class="header">
-                    <div class="chip">SISTEMA ACTIVO</div>
-                    <h1>BYPASS</h1>
-                    <div class="subtitle">MORTYHUB LINK RESOLVER</div>
-                </div>
-                <div class="sep"><div class="sep-line"></div><div class="sep-txt">◈ INPUT ◈</div><div class="sep-line"></div></div>
-                <div class="lbl">URL OBJETIVO</div>
-                <input type="text" id="linkInput" placeholder="https://linkvertise.com/...  |  link-hub.net/...">
-                <button id="bypassBtn" onclick="runBypass()">
-                    <div class="fill"></div>
-                    <span class="btxt">⚡ SALTAR ENLACE</span>
-                </button>
-                <div class="progress-track" id="progressTrack"><div class="progress-bar"></div></div>
-                <div id="result"></div>
-            </div>
-        </div>
-        <div class="footer">MORTYHUB &nbsp;◈&nbsp; BYPASS ENGINE v5.0 &nbsp;◈&nbsp; 2025</div>
-    </div>
+
+<div class="panel">
+    <h1>MORTYHUB BYPASS</h1>
+    <p style="font-size: 0.7rem; color: #888;">Powered by Bypass.City Logic</p>
+    <input type="text" id="urlInput" placeholder="Pega el link de Linkvertise o LootLink...">
+    <button onclick="startBypass()">Ejecutar Bypass ⚡</button>
+    
+    <div id="status">Esperando link...</div>
+    <div id="resultBox" class="result-box"></div>
+</div>
 
 <script>
-// ─── UTILIDADES ────────────────────────────────────────────────────────────────
-const PROXIES = [
-    url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    url => `https://thingproxy.freeboard.io/fetch/${url}`,
-];
+    async function startBypass() {
+        const url = document.getElementById('urlInput').value;
+        const status = document.getElementById('status');
+        const resultBox = document.getElementById('resultBox');
 
-// Intenta hacer fetch pasando por múltiples proxies CORS
-async function proxiedFetch(url, opts = {}) {
-    for (const proxy of PROXIES) {
+        if(!url) return alert("Introduce una URL");
+
+        status.innerHTML = "Inyectando solicitud... 🛠️";
+        resultBox.style.display = "none";
+
         try {
-            const res = await fetch(proxy(url), { signal: AbortSignal.timeout(10000), ...opts });
-            if (res.ok) return res;
-        } catch (_) {}
-    }
-    // Último intento: directo (puede funcionar si el servidor tiene CORS)
-    return fetch(url, { signal: AbortSignal.timeout(10000), ...opts });
-}
+            // Usamos la API de adbypass que es la que usa el script que pasaste
+            const apiUrl = `https://api.adbypass.org/bypass?url=${encodeURIComponent(url)}`;
+            
+            const response = await fetch(apiUrl);
+            const data = await response.json();
 
-// ─── MÉTODO 1: API interna de Linkvertise (la más confiable) ───────────────────
-async function linkvertiseDirect(rawUrl) {
-    // Detectar dominio y extraer path
-    const match = rawUrl.match(/(?:linkvertise\.com|link-hub\.net)\/(\d+\/[^\s?#]+)/i);
-    if (!match) return null;
-    const path = match[1];
-
-    // Paso 1 — Info del link
-    const infoUrl = `https://publisher.linkvertise.com/api/v1/redirect/link/static/${path}`;
-    const r1 = await proxiedFetch(infoUrl);
-    const d1 = await r1.json();
-
-    const linkId = d1?.data?.link?.id;
-    if (!linkId) return null;
-
-    // Paso 2 — Pedir destino con serial válido
-    const serial = btoa(unescape(encodeURIComponent(JSON.stringify({
-        timestamp: Math.floor(Date.now() / 1000),
-        random: String(Math.floor(Math.random() * 9000000) + 1000000),
-        link_id: linkId
-    }))));
-
-    const destUrl = `https://publisher.linkvertise.com/api/v1/redirect/link/static/${path}/target?serial=${encodeURIComponent(serial)}`;
-    const r2 = await proxiedFetch(destUrl);
-    const d2 = await r2.json();
-
-    return d2?.data?.target?.url || d2?.data?.url || null;
-}
-
-// ─── MÉTODO 2: Linkvertise GraphQL (método alternativo) ───────────────────────
-async function linkvertiseGraphQL(rawUrl) {
-    const match = rawUrl.match(/(?:linkvertise\.com|link-hub\.net)\/(\d+)\/([^\s?#]+)/i);
-    if (!match) return null;
-    const [, userId, linkSlug] = match;
-
-    const query = `
-        query GetLinkTarget($userId: Int!, $linkSlug: String!) {
-            link(user_id: $userId, link: $linkSlug) {
-                destination_url
+            if(data.success && data.destination) {
+                status.innerHTML = "✅ BYPASS EXITOSO";
+                resultBox.style.display = "block";
+                resultBox.innerHTML = `<a href="${data.destination}" target="_blank">CLIC PARA ABRIR DESTINO</a>`;
+            } else {
+                status.innerHTML = "❌ Error: Link no soportado.";
+            }
+        } catch (e) {
+            // Si la anterior falla, intentamos con la de respaldo
+            status.innerHTML = "Intentando servidor secundario...";
+            try {
+                const res2 = await fetch(`https://bypass.pm/api/bypass?url=${encodeURIComponent(url)}`);
+                const data2 = await res2.json();
+                if(data2.destination) {
+                    status.innerHTML = "✅ BYPASS EXITOSO (Backup)";
+                    resultBox.style.display = "block";
+                    resultBox.innerHTML = `<a href="${data2.destination}" target="_blank">CLIC PARA ABRIR DESTINO</a>`;
+                } else {
+                    status.innerHTML = "❌ API caída. Intenta más tarde.";
+                }
+            } catch(err) {
+                status.innerHTML = "❌ Error de conexión total.";
             }
         }
-    `;
-
-    const body = JSON.stringify({
-        query,
-        variables: { userId: parseInt(userId), linkSlug }
-    });
-
-    const gqlUrl = 'https://publisher.linkvertise.com/graphql';
-    const r = await proxiedFetch(gqlUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body
-    });
-    const d = await r.json();
-    return d?.data?.link?.destination_url || null;
-}
-
-// ─── MÉTODO 3: bypassunlock.com ───────────────────────────────────────────────
-async function tryBypassUnlock(rawUrl) {
-    const apiUrl = `https://bypassunlock.com/api/bypass?url=${encodeURIComponent(rawUrl)}`;
-    const r = await proxiedFetch(apiUrl);
-    const text = await r.text();
-    const d = JSON.parse(text);
-    const url = d?.destination || d?.result || d?.bypassed || d?.url || d?.data?.url;
-    return (url && url.startsWith('http')) ? url : null;
-}
-
-// ─── MÉTODO 4: dlr.kys.gay ────────────────────────────────────────────────────
-async function tryDlrKys(rawUrl) {
-    const apiUrl = `https://dlr.kys.gay/api/free/bypass?url=${encodeURIComponent(rawUrl)}`;
-    const r = await proxiedFetch(apiUrl);
-    const d = await r.json();
-    const url = d?.destination || d?.result || d?.bypassed || d?.url;
-    return (url && url.startsWith('http')) ? url : null;
-}
-
-// ─── ORQUESTADOR ──────────────────────────────────────────────────────────────
-const METHODS = [
-    { name: 'Linkvertise API interna',  fn: linkvertiseDirect },
-    { name: 'Linkvertise GraphQL',      fn: linkvertiseGraphQL },
-    { name: 'bypassunlock.com',         fn: tryBypassUnlock },
-    { name: 'dlr.kys.gay',             fn: tryDlrKys },
-];
-
-async function runBypass() {
-    const input = document.getElementById('linkInput').value.trim();
-    const resDiv = document.getElementById('result');
-    const btn   = document.getElementById('bypassBtn');
-    const track = document.getElementById('progressTrack');
-
-    if (!input) { resDiv.innerHTML = mkStatus('error', '⚠ ERROR — Pega un link primero.'); return; }
-
-    btn.disabled = true;
-    track.classList.add('active');
-    let finalUrl = null;
-
-    for (let i = 0; i < METHODS.length; i++) {
-        resDiv.innerHTML = mkStatus('loading', `[${i+1}/${METHODS.length}] ${METHODS[i].name}...`);
-        try {
-            const res = await METHODS[i].fn(input);
-            if (res && res.startsWith('http')) { finalUrl = res; break; }
-        } catch (e) {
-            console.warn(`[${METHODS[i].name}]`, e.message);
-        }
     }
-
-    btn.disabled = false;
-    track.classList.remove('active');
-
-    if (finalUrl) {
-        resDiv.innerHTML = `
-            ${mkStatus('success', '✓ DESTINO ENCONTRADO — Enlace resuelto.')}
-            <div class="url-pill">${finalUrl}</div>
-            <a class="go-link" href="${finalUrl}" target="_blank" rel="noopener noreferrer">IR AL DESTINO</a>`;
-    } else {
-        resDiv.innerHTML = `
-            ${mkStatus('error', 'ERROR — No se pudo resolver el enlace.')}
-            <div class="info-box">
-                ▸ Soporta: linkvertise.com y link-hub.net<br>
-                ▸ Verifica que el link esté completo y activo<br>
-                ▸ Abre la consola del navegador (F12) para ver errores detallados
-            </div>`;
-    }
-}
-
-function mkStatus(type, msg) {
-    return `<div class="status ${type}"><div class="dot-ind"></div><span>${msg}</span></div>`;
-}
-
-document.getElementById('linkInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') runBypass();
-});
 </script>
+
 </body>
 </html>
