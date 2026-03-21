@@ -3,91 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MortyHub - Bypass Tool 😈</title>
+    <title>MORTYHUB BYPASS 😈</title>
     <style>
-        :root { --neon: #00ff99; --bg: #050505; }
-        body { 
-            background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace;
-            display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0;
-        }
-        .panel {
-            background: #111; border: 2px solid var(--neon); padding: 30px;
-            border-radius: 10px; box-shadow: 0 0 20px rgba(0,255,153,0.3);
-            width: 90%; max-width: 450px; text-align: center;
-        }
-        h1 { text-shadow: 0 0 10px var(--neon); font-size: 1.5rem; }
-        input {
-            width: 100%; padding: 12px; margin: 15px 0; background: #000;
-            border: 1px solid var(--neon); color: white; border-radius: 5px;
-            outline: none; box-sizing: border-box;
-        }
-        button {
-            width: 100%; padding: 12px; background: var(--neon); color: #000;
-            border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
-            text-transform: uppercase; transition: 0.3s;
-        }
-        button:hover { box-shadow: 0 0 20px var(--neon); transform: scale(1.02); }
-        #status { margin-top: 20px; font-size: 0.9rem; }
-        .result-box {
-            margin-top: 20px; padding: 10px; border: 1px dashed var(--neon);
-            display: none; word-break: break-all;
-        }
-        a { color: white; text-decoration: none; font-weight: bold; }
+        body { background: #000; color: #0f0; font-family: monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { border: 2px solid #0f0; padding: 20px; border-radius: 10px; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 0 15px #0f0; }
+        input { width: 100%; padding: 10px; background: #111; border: 1px solid #0f0; color: #fff; margin: 10px 0; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #0f0; color: #000; border: none; font-weight: bold; cursor: pointer; }
+        #status { margin-top: 15px; font-size: 14px; }
+        .link-final { display: block; margin-top: 15px; color: #fff; background: #222; padding: 10px; border: 1px dashed #0f0; text-decoration: none; }
     </style>
 </head>
 <body>
 
-<div class="panel">
-    <h1>MORTYHUB BYPASS</h1>
-    <p style="font-size: 0.7rem; color: #888;">Powered by Bypass.City Logic</p>
-    <input type="text" id="urlInput" placeholder="Pega el link de Linkvertise o LootLink...">
-    <button onclick="startBypass()">Ejecutar Bypass ⚡</button>
-    
-    <div id="status">Esperando link...</div>
-    <div id="resultBox" class="result-box"></div>
+<div class="box">
+    <h2>MORTYHUB BYPASS</h2>
+    <input type="text" id="url" placeholder="Pega el link de Linkvertise...">
+    <button onclick="unlock()">DESBLOQUEAR ENLACE ⚡</button>
+    <div id="status">Esperando...</div>
 </div>
 
 <script>
-    async function startBypass() {
-        const url = document.getElementById('urlInput').value;
+    async function unlock() {
+        const url = document.getElementById('url').value;
         const status = document.getElementById('status');
-        const resultBox = document.getElementById('resultBox');
+        
+        if(!url.includes('linkvertise') && !url.includes('link-hub') && !url.includes('direct-link')) {
+            return status.innerHTML = "❌ ¡Eso no es un link de Linkvertise!";
+        }
 
-        if(!url) return alert("Introduce una URL");
-
-        status.innerHTML = "Inyectando solicitud... 🛠️";
-        resultBox.style.display = "none";
+        status.innerHTML = "Inyectando bypass... ⏳";
 
         try {
-            // Usamos la API de adbypass que es la que usa el script que pasaste
-            const apiUrl = `https://api.adbypass.org/bypass?url=${encodeURIComponent(url)}`;
-            
-            const response = await fetch(apiUrl);
+            // Esta es una de las APIs más estables actualmente
+            const response = await fetch(`https://api.bypass.vip/bypass?url=${encodeURIComponent(url)}`);
             const data = await response.json();
 
-            if(data.success && data.destination) {
-                status.innerHTML = "✅ BYPASS EXITOSO";
-                resultBox.style.display = "block";
-                resultBox.innerHTML = `<a href="${data.destination}" target="_blank">CLIC PARA ABRIR DESTINO</a>`;
+            if (data.destination) {
+                status.innerHTML = "✅ ENLACE ENCONTRADO:";
+                status.innerHTML += `<a class="link-final" href="${data.destination}" target="_blank">IR AL ARCHIVO / SCRIPT</a>`;
             } else {
-                status.innerHTML = "❌ Error: Link no soportado.";
+                // Si la primera falla, intentamos con la segunda inmediatamente
+                status.innerHTML = "Reintentando por servidor secundario... 🛠️";
+                const res2 = await fetch(`https://bypass.city/api/free/bypass?url=${encodeURIComponent(url)}`);
+                const data2 = await res2.json();
+                
+                if(data2.destination) {
+                    status.innerHTML = "✅ ENLACE ENCONTRADO:";
+                    status.innerHTML += `<a class="link-final" href="${data2.destination}" target="_blank">IR AL ARCHIVO / SCRIPT</a>`;
+                } else {
+                    status.innerHTML = "❌ Error: Link protegido o API caída. Prueba con otro link.";
+                }
             }
         } catch (e) {
-            // Si la anterior falla, intentamos con la de respaldo
-            status.innerHTML = "Intentando servidor secundario...";
-            try {
-                const res2 = await fetch(`https://bypass.pm/api/bypass?url=${encodeURIComponent(url)}`);
-                const data2 = await res2.json();
-                if(data2.destination) {
-                    status.innerHTML = "✅ BYPASS EXITOSO (Backup)";
-                    resultBox.style.display = "block";
-                    resultBox.innerHTML = `<a href="${data2.destination}" target="_blank">CLIC PARA ABRIR DESTINO</a>`;
-                } else {
-                    status.innerHTML = "❌ API caída. Intenta más tarde.";
-                }
-            } catch(err) {
-                status.innerHTML = "❌ Error de conexión total.";
-            }
+            status.innerHTML = "❌ Error de conexión. Linkvertise bloqueó la petición.";
         }
     }
 </script>
